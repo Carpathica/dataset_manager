@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dataset Manager</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20260331_1">
+</head>
+<body>
+  <div class="bg-shape bg-shape-a"></div>
+  <div class="bg-shape bg-shape-b"></div>
+  <div class="layout">
+    <main class="panel panel-main">
+      <section class="card">
+        <h2>Dataset Connection</h2>
+        <div class="split-grid">
+          <label class="input-group">
+            <span>Images folder</span>
+            <div class="path-row">
+              <input id="imagesDirInput" type="text" placeholder="C:\datasets\project\images">
+              <button class="btn picker-btn" data-picker-target="imagesDirInput" data-picker-mode="dir">Browse</button>
+            </div>
+          </label>
+          <label class="input-group">
+            <span>Labels folder (optional)</span>
+            <div class="path-row">
+              <input id="labelsDirInput" type="text" placeholder="C:\datasets\project\labels">
+              <button class="btn picker-btn" data-picker-target="labelsDirInput" data-picker-mode="dir">Browse</button>
+            </div>
+          </label>
+        </div>
+        <label class="input-group">
+          <span>Classes YAML/TXT (optional)</span>
+          <div class="path-row">
+            <input id="classesFileInput" type="text" placeholder="C:\datasets\data.yaml">
+            <button class="btn picker-btn" data-picker-target="classesFileInput" data-picker-mode="yaml">Browse</button>
+          </div>
+        </label>
+        <div class="button-row">
+          <button id="loadSessionBtn" class="btn btn-primary">Connect Dataset</button>
+          <button id="rescanBtn" class="btn">Refresh Analysis</button>
+        </div>
+        <div id="sessionSummary" class="hint">Dataset is not connected.</div>
+      </section>
+
+      <section class="card">
+        <h2>Pair & Duplicate Check</h2>
+        <div class="inline-stats">
+          <span id="statImages" class="stat">images: 0</span>
+          <span id="statLabels" class="stat">labels: 0</span>
+          <span id="statPairs" class="stat">pairs: 0</span>
+        </div>
+        <div class="split-grid">
+          <div>
+            <h3>Images without label</h3>
+            <label class="checkbox-line compact">
+              <input id="deleteAllImagesCheck" type="checkbox">
+              <span>Mark all for deletion</span>
+            </label>
+            <div id="orphanImagesBox" class="table-wrap"></div>
+          </div>
+          <div>
+            <h3>Labels without image</h3>
+            <label class="checkbox-line compact">
+              <input id="deleteAllLabelsCheck" type="checkbox">
+              <span>Mark all for deletion</span>
+            </label>
+            <div id="orphanLabelsBox" class="table-wrap"></div>
+          </div>
+        </div>
+        <div class="card-controls orphan-actions-bottom">
+          <button id="applyOrphanActionsBtn" class="btn btn-primary">Delete Selected Orphan Files</button>
+        </div>
+
+        <div class="pair-duplicates">
+          <h3>Duplicates inside current dataset</h3>
+          <div id="pairDuplicatesBox" class="table-wrap"></div>
+          <div class="pair-dup-controls below-list">
+            <button id="resolvePairDuplicatesBtn" class="btn">Delete Unselected Duplicates</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Move/Copy Labels To Separate Folder</h2>
+        <label class="input-group">
+          <span>Target labels folder</span>
+          <div class="path-row">
+            <input id="moveLabelsTargetInput" type="text" placeholder="C:\datasets\project\labels">
+            <button class="btn picker-btn" data-picker-target="moveLabelsTargetInput" data-picker-mode="dir">Browse</button>
+          </div>
+        </label>
+        <div class="triple-grid">
+          <label class="checkbox-line inline-box">
+            <input id="moveUnpairedCheck" type="checkbox">
+            <span>Include orphan labels</span>
+          </label>
+          <label class="input-group">
+            <span>Mode</span>
+            <select id="moveLabelsModeInput">
+              <option value="move">move</option>
+              <option value="copy">copy</option>
+            </select>
+          </label>
+          <div></div>
+        </div>
+        <button id="moveLabelsBtn" class="btn">Run Move/Copy</button>
+      </section>
+
+      <section class="card">
+        <h2>Create Train/Val/Test Split</h2>
+        <div class="triple-grid">
+          <label class="input-group"><span>Train ratio</span><input id="trainRatioInput" type="number" value="0.7" step="0.01" min="0"></label>
+          <label class="input-group"><span>Val ratio</span><input id="valRatioInput" type="number" value="0.2" step="0.01" min="0"></label>
+          <label class="input-group"><span>Test ratio</span><input id="testRatioInput" type="number" value="0.1" step="0.01" min="0"></label>
+        </div>
+        <div class="triple-grid">
+          <label class="input-group"><span>Seed</span><input id="splitSeedInput" type="number" value="42" step="1"></label>
+          <label class="input-group">
+            <span>Mode</span>
+            <select id="splitModeInput">
+              <option value="copy">copy</option>
+              <option value="move">move</option>
+            </select>
+          </label>
+          <label class="checkbox-line inline-box">
+            <input id="splitOnlyPairedCheck" type="checkbox" checked>
+            <span>Only image+label pairs</span>
+          </label>
+        </div>
+        <label class="input-group">
+          <span>Output folder</span>
+          <div class="path-row">
+            <input id="splitOutputInput" type="text" placeholder="C:\datasets\project_split">
+            <button class="btn picker-btn" data-picker-target="splitOutputInput" data-picker-mode="dir">Browse</button>
+          </div>
+        </label>
+        <div class="triple-grid">
+          <label class="checkbox-line inline-box">
+            <input id="splitYamlCheck" type="checkbox" checked>
+            <span>Generate YOLO YAML</span>
+          </label>
+          <label class="input-group"><span>YAML filename</span><input id="splitYamlNameInput" type="text" value="data.yaml"></label>
+          <div></div>
+        </div>
+        <button id="splitBtn" class="btn">Create Split</button>
+      </section>
+
+      <section class="card">
+        <h2>Merge Existing Splits</h2>
+        <label class="input-group">
+          <span>Source dataset folders (one per line)</span>
+          <textarea id="mergeSourcesInput" rows="4" placeholder="C:\datasets\set_a&#10;C:\datasets\set_b"></textarea>
+        </label>
+        <div class="button-row">
+          <button id="addMergeSourceBtn" class="btn">Add Folder</button>
+          <button id="mergePreviewBtn" class="btn">Find Duplicates</button>
+        </div>
+        <label class="input-group">
+          <span>Merged output folder</span>
+          <div class="path-row">
+            <input id="mergeOutputInput" type="text" placeholder="C:\datasets\merged">
+            <button class="btn picker-btn" data-picker-target="mergeOutputInput" data-picker-mode="dir">Browse</button>
+          </div>
+        </label>
+        <div class="triple-grid">
+          <label class="input-group">
+            <span>Mode</span>
+            <select id="mergeModeInput">
+              <option value="copy">copy</option>
+              <option value="move">move</option>
+            </select>
+          </label>
+          <label class="checkbox-line inline-box">
+            <input id="mergeDeleteSkippedCheck" type="checkbox">
+            <span>Delete skipped duplicates in source</span>
+          </label>
+          <label class="checkbox-line inline-box">
+            <input id="mergeYamlCheck" type="checkbox" checked>
+            <span>Generate YOLO YAML</span>
+          </label>
+        </div>
+        <button id="mergeRunBtn" class="btn btn-primary">Run Merge</button>
+        <div id="mergeDuplicatesBox" class="table-wrap"></div>
+      </section>
+
+      <section class="card">
+        <h2>Dataset Analytics</h2>
+        <div class="check-grid">
+          <label class="checkbox-line"><input type="checkbox" class="chart-check" value="class_distribution" checked><span>Class distribution</span></label>
+          <label class="checkbox-line"><input type="checkbox" class="chart-check" value="objects_per_image" checked><span>Objects per image</span></label>
+          <label class="checkbox-line"><input type="checkbox" class="chart-check" value="bbox_wh" checked><span>BBox width/height</span></label>
+          <label class="checkbox-line"><input type="checkbox" class="chart-check" value="bbox_area"><span>BBox area</span></label>
+          <label class="checkbox-line"><input type="checkbox" class="chart-check" value="pair_coverage" checked><span>Pair coverage</span></label>
+          <label class="checkbox-line"><input type="checkbox" class="chart-check" value="image_sizes"><span>Image sizes</span></label>
+        </div>
+        <label class="input-group">
+          <span>Charts output folder (optional)</span>
+          <div class="path-row">
+            <input id="analyticsOutputInput" type="text" placeholder="Leave empty to display only (no file save)">
+            <button class="btn picker-btn" data-picker-target="analyticsOutputInput" data-picker-mode="dir">Browse</button>
+          </div>
+        </label>
+        <button id="analyticsBtn" class="btn">Generate Charts</button>
+        <div id="chartsBox" class="charts-grid"></div>
+      </section>
+
+      <div id="statusBar" class="status">Connect dataset and run analysis.</div>
+    </main>
+  </div>
+
+  <div id="pickerModal" class="picker-modal hidden">
+    <div class="picker-window">
+      <div class="picker-header">
+        <div id="pickerTitle" class="picker-title">Select Path</div>
+        <button id="pickerCloseBtn" class="btn">Close</button>
+      </div>
+      <div class="picker-controls">
+        <button id="pickerRootsBtn" class="btn">Roots</button>
+        <button id="pickerUpBtn" class="btn">Up</button>
+        <button id="pickerSelectCurrentBtn" class="btn btn-primary">Select Current Folder</button>
+      </div>
+      <div id="pickerPath" class="picker-path"></div>
+      <ul id="pickerList" class="picker-list"></ul>
+    </div>
+  </div>
+
+      <div id="imagePreviewModal" class="picker-modal hidden">
+    <div class="picker-window image-preview-window">
+      <div class="picker-header">
+        <div id="imagePreviewTitle" class="picker-title">File Preview</div>
+        <button id="imagePreviewCloseBtn" class="btn">Close</button>
+      </div>
+      <div class="picker-path" id="imagePreviewPath"></div>
+      <div class="image-preview-wrap">
+        <img id="imagePreviewImg" alt="Duplicate preview">
+        <pre id="imagePreviewText" class="image-preview-text hidden"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=20260331_1" defer></script>
+</body>
+</html>
