@@ -1,6 +1,6 @@
 # Dataset Manager
 
-Web-service for dataset housekeeping in YOLO projects.
+Web-service for dataset housekeeping in projects.
 
 ## What It Does
 
